@@ -1,5 +1,24 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Prisma y Azure SQL
+
+El proyecto usa Prisma 6 con el proveedor `sqlserver`; no necesita `prisma.config.ts` ni un adaptador. Define `DATABASE_URL` en el `.env` de la raíz para desarrollo y como variable secreta en el entorno donde despliegues:
+
+```dotenv
+DATABASE_URL="sqlserver://<servidor>.database.windows.net:1433;database=<base_de_datos>;user=<usuario>;password=<contraseña>;encrypt=true;trustServerCertificate=false"
+```
+
+Usa las credenciales de SQL Server que correspondan a tu Azure SQL y codifica los caracteres reservados de la contraseña para una URL. Permite también la conexión desde la IP/red del entorno de ejecución en el firewall de Azure SQL.
+
+Después de cambiar el esquema o instalar dependencias, valida y genera el cliente con:
+
+```bash
+pnpm exec prisma validate
+pnpm exec prisma generate
+```
+
+Prisma 6 no modela los índices filtrados definidos anteriormente sobre `core.Reports`. Se omiten del esquema para que la validación y generación funcionen; si ya existen en Azure SQL, no los elimines ni ejecutes `prisma db push` sin revisar antes el efecto en esa base de datos.
+
 ## Getting Started
 
 First, run the development server:

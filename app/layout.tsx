@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Source_Sans_3 } from "next/font/google";
 import "./globals.css";
+import "material-icons/iconfont/round.css";
+import { ClerkProvider } from '@clerk/nextjs'
+import { esMX } from "@clerk/localizations";
 
 const sourceSans3 = Source_Sans_3({
   variable: "--font-source-sans-3",
@@ -18,7 +21,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="es"
       className={`${sourceSans3.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <ClerkProvider localization={esMX}>
+          {children}
+        </ClerkProvider>
+      </body>
     </html>
   );
 }

@@ -3,7 +3,10 @@
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import LogoViaAtlixco from "@/app/(icon)/icon.png";
+import ActionButton from "@/components/ui/ActionButton";
+import LevelProgressBar from "@/components/gamification/LevelProgressBar";
 import MapLoading from "@/components/map/MapLoading";
+import { Show, SignInButton, UserButton } from '@clerk/nextjs';
 
 const MapViewer = dynamic(() => import("@/components/map/MapViewer"), { 
   ssr: false, 
@@ -19,19 +22,35 @@ export default function Home() {
       </header>
       
       <section className="flex-1 relative w-full overflow-hidden z-0">
-        <div className="absolute top-7 left-4 z-10">
+        <div className="absolute top-25 left-4 z-10">
           {/* Diseño provisional de cómo se va a ver la GUI, 
           conforme se añadan los componentes finales funcionales, 
           se eliminarán estas representaciones estáticas del código*/}
-          <button className="bg-night-sky text-volcano-snow p-2 rounded-md shadow-md">
-            Menú
+          <button className="flex bg-night-sky text-volcano-snow p-2 rounded-md shadow-md cursor-pointer">
+            <span className="material-icons-round text-3xl leading-none">menu</span>
           </button>
         </div>
         
-        <div className="absolute top-4 right-4 z-10">
-          <div className="bg-sunday-church text-foreground rounded-full w-10 h-10 flex items-center justify-center font-bold shadow-md">
-            U
-          </div>
+        <div className="absolute top-4 right-4 z-10 cursor-pointer">
+          <Show when="signed-out">
+            <SignInButton mode="modal">
+                <button className="bg-sunday-church text-white rounded-full font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 cursor-pointer">
+                  U
+                </button>
+            </SignInButton>
+          </Show>
+          <Show when="signed-in">
+            <UserButton
+              appearance={{
+                elements: {
+                  userButtonAvatarBox: {
+                    width: "50px",
+                    height: "50px"
+                  }
+                },
+              }}
+            />
+          </Show>
         </div>
 
         <div className="absolute bottom-4 left-4 z-10 bg-background/80 p-3 rounded-md shadow-md backdrop-blur-sm">
@@ -50,23 +69,37 @@ export default function Home() {
         <MapViewer />
       </section>
 
-      <footer className="bg-night-sky text-volcano-snow p-4 shrink-0 flex flex-wrap-reverse items-center justify-between gap-4">
+      <footer className="bg-night-sky text-volcano-snow p-6 shrink-0 flex flex-wrap-reverse items-center justify-between gap-4">
         <div className="flex items-center gap-3 w-full md:w-1/2">
-          <div className="bg-sunday-church text-night-sky font-bold rounded-md px-2 py-1 transform rotate-45">
-            <span className="inline-block transform -rotate-45">10</span>
-          </div>
-          <div className="h-4 bg-volcano-snow rounded-full w-full overflow-hidden">
-            <div className="h-full bg-tourist-flower w-1/3"></div>
-          </div>
+          <LevelProgressBar/>
         </div>
 
-        <div className="flex gap-2 w-full md:w-auto justify-between md:justify-end">
-          <button className="bg-volcano-snow text-night-sky px-4 py-2 rounded-md font-semibold cursor-pointer">
-            Tus reportes
-          </button>
-          <button className="bg-enphasis-red text-volcano-snow px-4 py-2 rounded-md font-semibold cursor-pointer">
-            Reportar
-          </button>
+        <div className="flex gap-4 w-full md:w-auto justify-between md:justify-end">
+          <Show when="signed-out">
+            <SignInButton mode="modal">
+              <ActionButton className="bg-volcano-snow text-night-sky">
+              Tus reportes
+              </ActionButton>
+            </SignInButton>
+          </Show>
+          <Show when="signed-out">
+            <SignInButton mode="modal">  
+              <ActionButton className="bg-enphasis-red text-volcano-snow">
+              Reportar
+              </ActionButton>
+            </SignInButton>
+          </Show>
+
+          <Show when="signed-in">
+            <ActionButton className="bg-volcano-snow text-night-sky">
+              Tus reportes
+            </ActionButton>
+          </Show>
+          <Show when="signed-in">
+            <ActionButton className="bg-enphasis-red text-volcano-snow">
+              Reportar
+            </ActionButton>
+          </Show>
         </div>
         
       </footer>
