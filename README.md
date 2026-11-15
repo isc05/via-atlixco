@@ -17,7 +17,7 @@ pnpm exec prisma validate
 pnpm exec prisma generate
 ```
 
-Prisma 6 no modela los índices filtrados definidos anteriormente sobre `core.Reports`. Se omiten del esquema para que la validación y generación funcionen; si ya existen en Azure SQL, no los elimines ni ejecutes `prisma db push` sin revisar antes el efecto en esa base de datos.
+Prisma 6 no modela los índices filtrados definidos anteriormente sobre `core.Reports`. Se omiten del esquema para que la validación y generación funcionen; no los elimines ni ejecutes `prisma db push` sin revisar antes el efecto en esa base de datos.
 
 ## Getting Started
 
@@ -47,9 +47,3 @@ To learn more about Next.js, take a look at the following resources:
 - [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
 You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.

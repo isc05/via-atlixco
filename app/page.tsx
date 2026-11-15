@@ -55,10 +55,6 @@ export default function Home() {
 
         <div className="absolute bottom-4 left-4 z-10 bg-background/80 p-3 rounded-md shadow-md backdrop-blur-sm">
           <p className="text-sm font-semibold mb-2 bg-night-sky text-volcano-snow px-2 py-1 rounded">Filtro</p>
-          <div className="flex items-center gap-2 text-sm">
-            <input id="cierres-bloqueos" type="checkbox" className="appearance-none w-4 h-4 rounded-full bg-volcano-snow checked:bg-sunday-church cursor-pointer" />
-            <label htmlFor="cierres-bloqueos" className="cursor-pointer">Cierres o bloqueos</label>
-          </div>
           <div className="flex items-center gap-2 text-sm mt-1">
             <input id="transporte-publico" type="checkbox" className="appearance-none w-4 h-4 rounded-full bg-volcano-snow checked:bg-sunday-church cursor-pointer" />
             <label htmlFor="transporte-publico" className="cursor-pointer">Transporte público</label>
