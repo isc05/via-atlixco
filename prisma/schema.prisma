@@ -21,9 +21,11 @@ model Authorities {
   is_verified         Boolean               @default(true, map: "DF_Authorities_is_verified")
   created_at          DateTime              @default(dbgenerated("sysdatetime()"), map: "DF_Authorities_created_at")
   Users               Users                 @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Authorities_Users")
+  OfficialReports     OfficialReports[]
   ReportCancellations ReportCancellations[]
   ReportConfirmations ReportConfirmations[]
   ReportResolutions   ReportResolutions[]
+  Reports             Reports[]
 
   @@schema("auth")
 }
@@ -58,12 +60,13 @@ model Denuncias {
 }
 
 model IncidentTypes {
-  id                     Int       @id(map: "PK_IncidentTypes") @default(autoincrement())
-  code                   String    @unique(map: "UQ_IncidentTypes_code") @db.NVarChar(50)
-  name                   String    @db.NVarChar(100)
-  description            String?   @db.NVarChar(500)
-  default_duration_hours Int       @default(24, map: "DF_IncidentTypes_default_duration")
-  is_official_only       Boolean   @default(false, map: "DF_IncidentTypes_is_official_only")
+  id                     Int               @id(map: "PK_IncidentTypes") @default(autoincrement())
+  code                   String            @unique(map: "UQ_IncidentTypes_code") @db.NVarChar(50)
+  name                   String            @db.NVarChar(100)
+  description            String?           @db.NVarChar(500)
+  default_duration_hours Int               @default(24, map: "DF_IncidentTypes_default_duration")
+  available_for          String            @default("AMBOS", map: "DF_IncidentTypes_available_for") @db.NVarChar(20)
+  OfficialReports        OfficialReports[]
   Reports                Reports[]
 
   @@schema("core")
@@ -136,35 +139,38 @@ model ReportResolutions {
 }
 
 model Reports {
-  id                  String                @id(map: "PK_Reports") @default(dbgenerated("newsequentialid()"), map: "DF_Reports_id") @db.UniqueIdentifier
-  user_id             String                @db.UniqueIdentifier
-  incident_type_id    Int
-  report_type         String                @db.NVarChar(20)
-  title               String                @db.NVarChar(150)
-  description         String?
-  street_osm_id       String                @db.NVarChar(64)
-  street_name         String?               @db.NVarChar(256)
-  latitude            Decimal               @db.Decimal(9, 6)
-  longitude           Decimal               @db.Decimal(9, 6)
-  status              String                @default("ACTIVO", map: "DF_Reports_status") @db.NVarChar(20)
-  evidence_photo_url  String?               @db.NVarChar(512)
-  positive_votes      Int                   @default(0, map: "DF_Reports_positive_votes")
-  negative_votes      Int                   @default(0, map: "DF_Reports_negative_votes")
-  reward_granted      Boolean               @default(false, map: "DF_Reports_reward_granted")
-  scheduled_start_at  DateTime?
-  scheduled_end_at    DateTime?
-  expires_at          DateTime
-  resolved_at         DateTime?
-  created_at          DateTime              @default(dbgenerated("sysdatetime()"), map: "DF_Reports_created_at")
-  updated_at          DateTime              @default(dbgenerated("sysdatetime()"), map: "DF_Reports_updated_at")
-  Denuncias           Denuncias[]
-  ReportCancellations ReportCancellations?
-  ReportConfirmations ReportConfirmations[]
-  ReportRatings       ReportRatings[]
-  ReportResolutions   ReportResolutions?
-  IncidentTypes       IncidentTypes         @relation(fields: [incident_type_id], references: [id], onUpdate: NoAction, map: "FK_Reports_IncidentTypes")
-  Users               Users                 @relation(fields: [user_id], references: [id], onUpdate: NoAction, map: "FK_Reports_Users")
-  UserActionLogs      UserActionLogs[]
+  id                             String                @id(map: "PK_Reports") @default(dbgenerated("newsequentialid()"), map: "DF_Reports_id") @db.UniqueIdentifier
+  user_id                        String                @db.UniqueIdentifier
+  incident_type_id               Int
+  report_type                    String                @db.NVarChar(20)
+  title                          String                @db.NVarChar(150)
+  description                    String?
+  street_osm_id                  String                @db.NVarChar(64)
+  street_name                    String?               @db.NVarChar(256)
+  latitude                       Decimal               @db.Decimal(9, 6)
+  longitude                      Decimal               @db.Decimal(9, 6)
+  status                         String                @default("Reportado", map: "DF_Reports_status") @db.NVarChar(20)
+  evidence_photo_url             String?               @db.NVarChar(512)
+  positive_votes                 Int                   @default(0, map: "DF_Reports_positive_votes")
+  negative_votes                 Int                   @default(0, map: "DF_Reports_negative_votes")
+  reward_granted                 Boolean               @default(false, map: "DF_Reports_reward_granted")
+  scheduled_start_at             DateTime?
+  scheduled_end_at               DateTime?
+  expires_at                     DateTime
+  resolved_at                    DateTime?
+  created_at                     DateTime              @default(dbgenerated("sysdatetime()"), map: "DF_Reports_created_at")
+  updated_at                     DateTime              @default(dbgenerated("sysdatetime()"), map: "DF_Reports_updated_at")
+  status_changed_by_authority_id String?               @db.UniqueIdentifier
+  status_changed_at              DateTime?
+  Denuncias                      Denuncias[]
+  ReportCancellations            ReportCancellations?
+  ReportConfirmations            ReportConfirmations[]
+  ReportRatings                  ReportRatings[]
+  ReportResolutions              ReportResolutions?
+  Authorities                    Authorities?          @relation(fields: [status_changed_by_authority_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_Reports_Authorities_StatusModifier")
+  IncidentTypes                  IncidentTypes         @relation(fields: [incident_type_id], references: [id], onUpdate: NoAction, map: "FK_Reports_IncidentTypes")
+  Users                          Users                 @relation(fields: [user_id], references: [id], onUpdate: NoAction, map: "FK_Reports_Users")
+  UserActionLogs                 UserActionLogs[]
 
   @@index([status, expires_at], map: "IX_Reports_Expiration")
   @@schema("core")
@@ -199,23 +205,24 @@ model UserBadges {
 }
 
 model Users {
-  id                                          String           @id(map: "PK_Users") @default(dbgenerated("newsequentialid()"), map: "DF_Users_id") @db.UniqueIdentifier
-  clerk_id                                    String           @unique(map: "UQ_Users_clerk_id") @db.NVarChar(128)
-  email                                       String           @unique(map: "UQ_Users_email") @db.NVarChar(256)
-  first_name                                  String?          @db.NVarChar(100)
-  last_name_paternal                          String?          @db.NVarChar(100)
-  last_name_maternal                          String?          @db.NVarChar(100)
-  avatar_url                                  String?          @db.NVarChar(512)
-  role                                        String           @default("CIUDADANO", map: "DF_Users_role") @db.NVarChar(20)
-  status                                      String           @default("ACTIVE", map: "DF_Users_status") @db.NVarChar(20)
-  reputation_points                           Int              @default(100, map: "DF_Users_reputation_points")
-  action_points                               Int              @default(0, map: "DF_Users_action_points")
-  collaboration_level                         Int              @default(1, map: "DF_Users_collaboration_level")
-  created_at                                  DateTime         @default(dbgenerated("sysdatetime()"), map: "DF_Users_created_at")
-  updated_at                                  DateTime         @default(dbgenerated("sysdatetime()"), map: "DF_Users_updated_at")
+  id                                          String                 @id(map: "PK_Users") @default(dbgenerated("newsequentialid()"), map: "DF_Users_id") @db.UniqueIdentifier
+  clerk_id                                    String                 @unique(map: "UQ_Users_clerk_id") @db.NVarChar(128)
+  email                                       String                 @unique(map: "UQ_Users_email") @db.NVarChar(256)
+  first_name                                  String?                @db.NVarChar(100)
+  last_name_paternal                          String?                @db.NVarChar(100)
+  last_name_maternal                          String?                @db.NVarChar(100)
+  avatar_url                                  String?                @db.NVarChar(512)
+  role                                        String                 @default("CIUDADANO", map: "DF_Users_role") @db.NVarChar(20)
+  status                                      String                 @default("ACTIVE", map: "DF_Users_status") @db.NVarChar(20)
+  reputation_points                           Int                    @default(100, map: "DF_Users_reputation_points")
+  action_points                               Int                    @default(0, map: "DF_Users_action_points")
+  collaboration_level                         Int                    @default(1, map: "DF_Users_collaboration_level")
+  created_at                                  DateTime               @default(dbgenerated("sysdatetime()"), map: "DF_Users_created_at")
+  updated_at                                  DateTime               @default(dbgenerated("sysdatetime()"), map: "DF_Users_updated_at")
   Authorities                                 Authorities?
-  Denuncias_Denuncias_reported_user_idToUsers Denuncias[]      @relation("Denuncias_reported_user_idToUsers")
-  Denuncias_Denuncias_reporter_user_idToUsers Denuncias[]      @relation("Denuncias_reporter_user_idToUsers")
+  Denuncias_Denuncias_reported_user_idToUsers Denuncias[]            @relation("Denuncias_reported_user_idToUsers")
+  Denuncias_Denuncias_reporter_user_idToUsers Denuncias[]            @relation("Denuncias_reporter_user_idToUsers")
+  OfficialReportThanks                        OfficialReportThanks[]
   ReportRatings                               ReportRatings[]
   Reports                                     Reports[]
   UserActionLogs                              UserActionLogs[]
@@ -223,4 +230,43 @@ model Users {
 
   @@index([clerk_id], map: "IX_Users_ClerkId")
   @@schema("auth")
+}
+
+model OfficialReports {
+  id                   String                 @id(map: "PK_OfficialReports") @default(dbgenerated("newsequentialid()"), map: "DF_OfficialReports_id") @db.UniqueIdentifier
+  authority_id         String                 @db.UniqueIdentifier
+  folio                String?                @db.NVarChar(100)
+  street_name          String                 @db.NVarChar(256)
+  between_street_1     String?                @db.NVarChar(150)
+  between_street_2     String?                @db.NVarChar(150)
+  neighborhood         String?                @db.NVarChar(150)
+  latitude             Decimal                @db.Decimal(9, 6)
+  longitude            Decimal                @db.Decimal(9, 6)
+  incident_type_id     Int
+  scheduled_start_at   DateTime
+  scheduled_end_at     DateTime
+  impact_level         String                 @db.NVarChar(50)
+  alternative_route    String?                @db.NVarChar(500)
+  affected_transport   String?                @db.NVarChar(500)
+  status               String                 @default("Reportado", map: "DF_OfficialReports_status") @db.NVarChar(20)
+  created_at           DateTime               @default(dbgenerated("sysdatetime()"), map: "DF_OfficialReports_created_at")
+  updated_at           DateTime               @default(dbgenerated("sysdatetime()"), map: "DF_OfficialReports_updated_at")
+  thanks_count         Int                    @default(0, map: "DF_OfficialReports_thanks_count")
+  Authorities          Authorities            @relation(fields: [authority_id], references: [id], onUpdate: NoAction, map: "FK_OfficialReports_Authorities")
+  IncidentTypes        IncidentTypes          @relation(fields: [incident_type_id], references: [id], onUpdate: NoAction, map: "FK_OfficialReports_IncidentTypes")
+  OfficialReportThanks OfficialReportThanks[]
+
+  @@schema("core")
+}
+
+model OfficialReportThanks {
+  id                 String          @id(map: "PK_OfficialReportThanks") @default(dbgenerated("newsequentialid()"), map: "DF_OfficialReportThanks_id") @db.UniqueIdentifier
+  official_report_id String          @db.UniqueIdentifier
+  user_id            String          @db.UniqueIdentifier
+  created_at         DateTime        @default(dbgenerated("sysdatetime()"), map: "DF_OfficialReportThanks_created_at")
+  OfficialReports    OfficialReports @relation(fields: [official_report_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_OfficialReportThanks_OfficialReports")
+  Users              Users           @relation(fields: [user_id], references: [id], onUpdate: NoAction, map: "FK_OfficialReportThanks_Users")
+
+  @@unique([official_report_id, user_id], map: "UQ_OfficialReportThanks_Report_User")
+  @@schema("social")
 }
