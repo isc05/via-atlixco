@@ -1,11 +1,13 @@
 "use client";
 
+import { useState } from "react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import LogoViaAtlixco from "@/app/(icon)/icon.png";
 import ActionButton from "@/components/ui/ActionButton";
 import LevelProgressBar from "@/components/gamification/LevelProgressBar";
 import MapLoading from "@/components/map/MapLoading";
+import ReportForm from "@/components/ui/ReportForm";
 import { Show, SignInButton, UserButton } from '@clerk/nextjs';
 
 const MapViewer = dynamic(() => import("@/components/map/MapViewer"), { 
@@ -14,10 +16,13 @@ const MapViewer = dynamic(() => import("@/components/map/MapViewer"), {
 });
 
 export default function Home() {
+  const [isReportFormOpen, setIsReportFormOpen] = useState(false);
+  const [isCoverageVisible, setIsCoverageVisible] = useState(false);
+
   return (
     <main className="flex flex-col h-screen w-full bg-background">
       <header className="bg-night-sky text-volcano-snow p-4 shrink-0 flex items-center justify-center">
-        <Image src={LogoViaAtlixco} alt="Vía Atlixco Logo" width={32} height={32} className="h-8 w-8 mr-2" />
+        <Image src={LogoViaAtlixco} alt="Vía Atlixco Logo" width={32} height={32} className="h-8 w-8 mr-2 select-none" draggable={false} />
         <h1 className="text-xl font-bold">Vía Atlixco</h1>
       </header>
       
@@ -59,10 +64,20 @@ export default function Home() {
             <input id="transporte-publico" type="checkbox" className="appearance-none w-4 h-4 rounded-full bg-volcano-snow checked:bg-sunday-church cursor-pointer" />
             <label htmlFor="transporte-publico" className="cursor-pointer">Transporte público</label>
           </div>
+          <div className="flex items-center gap-2 text-sm mt-1">
+            <input
+              id="cobertura"
+              type="checkbox"
+              checked={isCoverageVisible}
+              onChange={(event) => setIsCoverageVisible(event.target.checked)}
+              className="appearance-none w-4 h-4 rounded-full bg-volcano-snow checked:bg-sunday-church cursor-pointer"
+            />
+            <label htmlFor="cobertura" className="cursor-pointer">Cobertura del sistema</label>
+          </div>
         </div>
 
         {/* El componente del mapa hereda el alto del contenedor 'flex-1' */}
-        <MapViewer />
+        <MapViewer showCoverage={isCoverageVisible} />
       </section>
 
       <footer className="bg-night-sky text-volcano-snow p-6 shrink-0 flex flex-wrap-reverse items-center justify-between gap-4">
@@ -73,32 +88,39 @@ export default function Home() {
         <div className="flex gap-4 w-full md:w-auto justify-between md:justify-end">
           <Show when="signed-out">
             <SignInButton mode="modal">
-              <ActionButton className="bg-volcano-snow text-night-sky">
+              <ActionButton variant="misReportes">
               Tus reportes
               </ActionButton>
             </SignInButton>
           </Show>
           <Show when="signed-out">
             <SignInButton mode="modal">  
-              <ActionButton className="bg-enphasis-red text-volcano-snow">
+              <ActionButton variant="reportar">
               Reportar
               </ActionButton>
             </SignInButton>
           </Show>
 
           <Show when="signed-in">
-            <ActionButton className="bg-volcano-snow text-night-sky">
-              Tus reportes
+            <ActionButton variant="misReportes">
+              Mis reportes
             </ActionButton>
           </Show>
           <Show when="signed-in">
-            <ActionButton className="bg-enphasis-red text-volcano-snow">
+            <ActionButton
+              variant="reportar"
+              onClick={() => setIsReportFormOpen(true)}
+            >
               Reportar
             </ActionButton>
           </Show>
         </div>
         
       </footer>
+      <ReportForm
+        isOpen={isReportFormOpen}
+        onClose={() => setIsReportFormOpen(false)}
+      />
     </main>
   );
 }

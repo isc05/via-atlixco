@@ -1,5 +1,5 @@
 import Image from "next/image";
-import loading from "@/assets/animation-logo/loading.png";
+import loading from "@/assets/logo/loading.png";
 
 export default function MapLoading() {
   return (

@@ -1,22 +1,22 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Paleta de colores de Vía Atlixco */
+  --volcano-snow: #e3fcff;
+  --tourist-flower: #ff62c3;
+  --sunday-church: #ffc24a;
+  --olive-seasoning: #93aa77;
+  --night-sky: #422a73;
+  --enphasis-red: #be1c1c;
+  --enphasis-green: #1eaa0d;
 
-  /*Paleta de colores de Vía Atlixco*/
-  --volcano-snow:#e3fcff;
-  --tourist-flower:#ff62c3;
-  --sunday-church:#ffc24a;
-  --olive-seasoning:#93aa77;
-  --night-sky:#422a73;
-  --enphasis-red:#be1c1c;
-  --enphasis-gren:#1eaa0d;
+  --background: var(--volcano-snow);
+  --foreground: var(--night-sky);
 
-  /*Tamaños de texto predeterminados Vía Atlixco*/
-  --header-1:36px;
-  --header-2:24px;
-  --normal-text:16px;
+  /* Tamaños de texto predeterminados de Vía Atlixco */
+  --header-1: 36px;
+  --header-2: 24px;
+  --normal-text: 16px;
 }
 
 @theme inline {
@@ -36,13 +36,6 @@
   --text-normal: var(--normal-text);
 
   --font-sans: default;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {
